@@ -384,7 +384,7 @@ apksigner 失败 缺少 Java 运行环境 安装 openjdk-21（Termux）或 openj
 · ITxiao6666（酷安：阿奎亚）
   · GitHub: https://github.com/ITxiao6666
   · 酷安主页: https://www.coolapk.com/u/31943847
-  · 感谢捐赠三星 keybox.xml 用于测试（未参与开发）
+  · 感谢捐赠三星 keybox.xml 供个人使用喵（未参与开发）
 
 ---
 
