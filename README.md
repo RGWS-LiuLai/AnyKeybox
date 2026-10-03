@@ -388,7 +388,7 @@ Acknowledgements
 · ITxiao6666 (Coolapk: 阿奎亚)
   · GitHub: https://github.com/ITxiao6666
   · Coolapk: https://www.coolapk.com/u/31943847
-  · For donating a Samsung keybox.xml for testing. (Not involved in development.)
+  · For donating a Samsung keybox.xml for personal use. (Not involved in development.)
 
 ---
 
