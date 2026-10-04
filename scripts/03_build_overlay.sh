@@ -7,27 +7,30 @@ cd "$BUILD_DIR"
 echo "准备 Overlay 源码... / Preparing Overlay source code..."
 mkdir -p res/values res/xml
 
-# 通过Base64解码生成 AndroidManifest.xml，完美避开手机粘贴换行错误
-echo "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPG1hbmlmZXN0IHhtbG5zOmFuZHJvaWQ9Imh0dHA6Ly9zY2hlbWFzLmFuZHJvaWQuY29tL2Fway9yZXMvYW5kcm9pZCIKICAgIHBhY2thZ2U9ImNvbS5teS5vZW0ub3ZlcmxheSI+CiAgICA8YXBwbGljYXRpb24gYW5kcm9pZDpoYXNDb2RlPSJmYWxzZSIgLz4KICAgIDxvdmVybGF5CiAgICAgICAgYW5kcm9pZDp0YXJnZXRQYWNrYWdlPSJhbmRyb2lkIgogICAgICAgIGFuZHJvaWQ6dGFyZ2V0TmFtZT0iZnJhbWV3b3JrLXJlcyIKICAgICAgICBhbmRyb2lkOnJlc291cmNlc01hcD0iQHhtbC9vdmVybGF5cyIKICAgICAgICBhbmRyb2lkOmlzU3RhdGljPSJ0cnVlIiAvPgo8L21hbmlmZXN0Pg==" | base64 -d > AndroidManifest.xml
+cat > AndroidManifest.xml << 'XMLEOF'
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.my.oem.overlay"
+    android:targetSdkVersion="28">
+    <application android:hasCode="false" />
+    <overlay
+        android:targetPackage="android"
+        android:priority="0"
+        android:isStatic="true" />
+</manifest>
+XMLEOF
 
-# 通过Base64解码生成 overlays.xml
-echo "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPG92ZXJsYXkgeG1sbnM6YW5kcm9pZD0iaHR0cDovL3NjaGVtYXMuYW5kcm9pZC5jb20vYXBrL3Jlcy9hbmRyb2lkIj4KICAgIDxpdGVtIHRhcmdldD0iYXJyYXkvdmVuZG9yX3JlcXVpcmVkX2F0dGVzdGF0aW9uX2NlcnRpZmljYXRlcyIKICAgICAgICAgIHZhbHVlPSJAYXJyYXkvdmVuZG9yX3JlcXVpcmVkX2F0dGVzdGF0aW9uX2NlcnRpZmljYXRlcyIgLz4KPC9vdmVybGF5Pg==" | base64 -d > res/xml/overlays.xml
-
-# 动态生成 arrays.xml 并注入提取出来的证书
-echo '<?xml version="1.0" encoding="utf-8"?>' > res/values/arrays.xml
-echo '<resources>' >> res/values/arrays.xml
-echo '    <string-array name="vendor_required_attestation_certificates">' >> res/values/arrays.xml
-
-while IFS= read -r line || [ -n "$line" ]; do
-    if [ -n "$line" ]; then
-        echo '        <item>' >> res/values/arrays.xml
-        echo "$line" >> res/values/arrays.xml
-        echo '        </item>' >> res/values/arrays.xml
-    fi
-done < "$SCRIPT_DIR/../keys/ca.crt"
-
-echo '    </string-array>' >> res/values/arrays.xml
-echo '</resources>' >> res/values/arrays.xml
+# 生成正确的 arrays.xml（解决 BUG-01：按证书块而非行拆分，每张证书一个 <item>）
+echo "生成 arrays.xml（提取证书并分块）..."
+python3 - "$SCRIPT_DIR/../keys/ca.crt" "$BUILD_DIR/res/values/arrays.xml" <<'PYEOF'
+import sys, re
+certs = re.findall(r'-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----', open(sys.argv[1]).read(), re.S)
+with open(sys.argv[2], 'w') as f:
+    f.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <string-array name="vendor_required_attestation_certificates">\n')
+    for c in certs:
+        f.write('        <item>%s</item>\n' % c.strip())
+    f.write('    </string-array>\n</resources>\n')
+PYEOF
 
 echo "正在编译资源... / Compiling resources..."
 aapt2 compile --dir res/ -o compiled.flata

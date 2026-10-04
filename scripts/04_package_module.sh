@@ -13,10 +13,12 @@ fi
 
 echo "正在构建模块结构... / Building module structure..."
 rm -rf "$MODULE_DIR"
-mkdir -p "$MODULE_DIR/system/product/overlay/"
-cp "$APK_FILE" "$MODULE_DIR/system/product/overlay/"
+mkdir -p "$MODULE_DIR/product/overlay/"
 
-# 使用单行 echo 写入，完美避开手机输入法截断换行的问题
+# 注意：路径已由 system/product/overlay 改为 product/overlay ！
+cp "$APK_FILE" "$MODULE_DIR/product/overlay/"
+
+# 使用单行 echo 写入，完美避开 Linux/Termux 输入法截断换行的问题
 echo "id=my_oem_overlay" > "$MODULE_DIR/module.prop"
 echo "name=My OEM Attestation Overlay" >> "$MODULE_DIR/module.prop"
 echo "version=1.0" >> "$MODULE_DIR/module.prop"
