@@ -291,7 +291,7 @@ bash scripts/run_all.sh
 
 步骤 5：部署模块
 
-将 output/MyOemOverlay.zip 传输到已 Root 的 Android 设备，通过 KernelSU / Magisk / APatch 刷入。
+将 output/MyOemOverlay.zip 传输到已 Root 的 Android 设备，通过 KernelSU / Magisk / APatch 刷入。（ KernelSU / APatch 需有元模块，只识别/system目录的元模块应当手动勾选挂载此模块）
 
 步骤 6：导入
 
