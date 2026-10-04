@@ -1,0 +1,11 @@
+keys/
+overlay_build/
+output/
+*.apk
+*.jks
+*.flata
+*.idsig
+keybox_input/*.xml
+!keybox_input/.gitkeep
+.DS_Store
+Thumbs.db
