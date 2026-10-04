@@ -1,0 +1,6 @@
+id=my_oem_overlay
+name=My OEM Attestation Overlay
+version=1.0
+versionCode=1
+author=RGWS-LiuLai
+description=Overlay to inject custom OEM attestation certificate. GitHub: https://github.com/RGWS-LiuLai | Coolapk: 恋勿思
