@@ -9,7 +9,7 @@
 
 ## 项目简介
 
-AnyKeybox 是一款面向安全研究与玩机爱好者的纯脚本工具。它可以解析**任意**来源的 `keybox.xml` 文件——无论是从其他设备提取、网上下载，还是**从头人工伪造**——提取其中的证书链，并自动编译、签名、打包成一个 KernelSU / Magisk / APatch 模块。
+AnyKeybox 是一款面向安全研究与玩机爱好者的纯脚本工具。它可以解析**任意**（但是仅仅推荐RKP，而非传统Keybox.xml）来源的 `keybox.xml` 文件——无论是从其他设备提取（推荐RKP）、网上下载，还是**从头人工伪造**——提取其中的证书链，并自动编译、签名、打包成一个 KernelSU / Magisk / APatch 模块。
 
 刷入该模块后，你的 Android 设备会将 `keybox.xml` 中的根证书视为“设备制造商信任的 OEM 证书”，从而在 [KeyAttestation](https://github.com/vvb2060/KeyAttestation) 等检测工具中显示为**“本设备信任该根证书，但其他设备可能不信任”**的合法状态。
 
@@ -322,21 +322,6 @@ MyOemOverlay.zip
 
 “本设备信任该根证书，但其他设备可能不信任。”
 
-你还可以通过命令行验证 Overlay 是否启用：
-
-```bash
-su -c "cmd overlay list --user current | grep my_oem_overlay"
-```
-
-· [x] = 已启用并生效
-· [ ] = 已安装但未启用
-
-手动启用：
-
-```bash
-su -c "cmd overlay enable --user current com.my.oem.overlay"
-```
-
 卸载与回退
 
 所有修改都存储在模块目录中，而非系统分区。要恢复原状：
@@ -358,7 +343,7 @@ Q：这个会变砖吗？
 A：不会。RRO Overlay 是 Android 官方支持的机制。即使 Overlay 配置无效，系统也只会忽略它。最坏的情况是无限重启，但通过 TWRP 或 KernelSU 安全模式删除模块文件夹即可轻松恢复。
 
 Q：能通过 Google Play Integrity / SafetyNet 认证吗？
-A：不能。证书是自签名的或来自泄露的 keybox，无法链回 Google 的认证根密钥。它无法通过硬件级认证检查。仅供研究和测试使用。
+A：看情况，如果是 Gooogle 未吊销的密钥（推荐RKP）即可通过验证，但如果是吊销的和人工伪造的就不行。
 
 Q：如果我的 keybox.xml 是人工伪造的，完全没有任何官方来源，能行吗？
 A：完全没问题。设备不会向任何外部机构验证根证书的来源。只要证书是有效的 PEM 编码证书，并通过 RRO 放入 OEM 信任数组，系统就会信任它。这正是本工具即使对完全伪造的 keybox 也能生效的原因。
