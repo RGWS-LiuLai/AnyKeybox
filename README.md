@@ -9,7 +9,7 @@
 
 ## What is AnyKeybox?
 
-AnyKeybox is a pure-script tool designed for security researchers and Android enthusiasts. It parses **any** `keybox.xml` file — whether extracted from another device, downloaded from the internet, or **artificially fabricated from scratch** — extracts the embedded certificate chain, and automatically compiles, signs, and packages it into a KernelSU / Magisk / APatch module.
+AnyKeybox is a pure-script tool designed for security researchers and Android enthusiasts. It parses **any** `keybox.xml`(However, only RKP is recommended, rather than the traditional Keybox.xml.) file — whether extracted from another device, downloaded from the internet, or **artificially fabricated from scratch** — extracts the embedded certificate chain, and automatically compiles, signs, and packages it into a KernelSU / Magisk / APatch module.
 
 Once flashed, your Android device will treat the root certificate from the `keybox.xml` as an **OEM-trusted certificate**, causing tools like [KeyAttestation](https://github.com/vvb2060/KeyAttestation) to display the legitimate status:
 
@@ -217,7 +217,7 @@ The script will:
 
 Step 5: Flash the module
 
-After the script completes, find output/MyOemOverlay.zip. Open your root manager (KernelSU / Magisk / APatch), go to Modules → Install from local, select the ZIP. Do not reboot yet.
+After the script completes, find output/MyOemOverlay.zip. Open your root manager (KernelSU / Magisk / APatch), go to Modules → Install from local, select the ZIP. Do not reboot yet.（KernelSU / APatch requires a metamodule. Metamodules that only recognize the /system directory should be manually checked to mount this module.）
 
 Step 6: Import
 
@@ -322,21 +322,6 @@ After rebooting, open KeyAttestation and check the root certificate status. A su
 
 "This device trusts this root certificate, but it may not be trusted by others."
 
-You can also verify the Overlay is active:
-
-```bash
-su -c "cmd overlay list --user current | grep my_oem_overlay"
-```
-
-· [x] = enabled and active
-· [ ] = installed but not enabled
-
-To manually enable:
-
-```bash
-su -c "cmd overlay enable --user current com.my.oem.overlay"
-```
-
 Uninstalling / Reverting
 
 All modifications are stored in the module directory, not in the system partition. To revert:
@@ -358,7 +343,7 @@ Q: Will this brick my device?
 A: No. RRO Overlays are an officially supported Android mechanism. Even if the Overlay configuration is invalid, the system will simply ignore it. The worst case is a boot loop, which is easily recoverable by removing the module folder via TWRP or KernelSU Safe Mode.
 
 Q: Can this pass Google Play Integrity / SafetyNet?
-A: No. The certificate is self-signed or comes from a leaked keybox; it does not chain back to Google's attestation root key. It cannot pass hardware-backed attestation checks. It is intended for research and testing purposes only.
+A:It depends. If it is a Google non-revoked key (RKP recommended), it will pass verification; however, if it is a revoked key or a manually forged key, it will not pass verification.
 
 Q: What if my keybox.xml is artificially fabricated and has no official origin?
 A: That is perfectly fine. The device does not verify the origin of the root certificate against any external authority. As long as the certificate is a valid PEM-encoded certificate and is placed into the OEM trust array via RRO, the system will trust it. This is precisely why this tool works even with completely artificial keyboxes.
