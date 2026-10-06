@@ -9,9 +9,11 @@
 
 ## 项目简介
 
-AnyKeybox 是一款面向安全研究与玩机爱好者的纯脚本工具。它可以解析**任意**（但是仅仅推荐RKP，而非传统Keybox.xml）来源的 `keybox.xml` 文件——无论是从其他设备提取（推荐RKP）、网上下载，还是**从头人工伪造**——提取其中的证书链，并自动编译、签名、打包成一个 KernelSU / Magisk / APatch 模块。
+AnyKeybox 是一款面向安全研究与玩机爱好者的纯脚本工具。它可以解析**任意**来源的 RKP 和只有只有某个设备信任的RKP以及自签名 `keybox.xml` （ Google 硬件 keybox 无法使用）文件——无论是从其他设备提取、网上下载，还是**从头人工伪造**——提取其中的证书链，并自动编译、签名、打包成一个 KernelSU / Magisk / APatch 模块。
 
 刷入该模块后，你的 Android 设备会将 `keybox.xml` 中的根证书视为“设备制造商信任的 OEM 证书”，从而在 [KeyAttestation](https://github.com/vvb2060/KeyAttestation) 等检测工具中显示为**“本设备信任该根证书，但其他设备可能不信任”**的合法状态。
+
+<img width="1262" height="968" alt="1000012487" src="https://github.com/user-attachments/assets/508e8ebb-5747-4b23-9dc9-03c2862d4f36" />
 
 **最关键的是：哪怕这个 `keybox.xml` 完全是人工伪造的，也同样生效。** 系统不会向 Google 验证证书的真实性，也不会进行任何远程校验。只要证书被放入系统的 OEM 信任数组，设备就会无条件信任它。
 
@@ -28,8 +30,8 @@ AnyKeybox 是一款面向安全研究与玩机爱好者的纯脚本工具。它�
 - **纯脚本驱动**：无需 Android Studio，Termux 或 Linux 终端即可完成全部流程。
 - **跨平台兼容**：同时支持 Android (Termux) 与标准 Linux 环境。
 - **一键操作**：将 `keybox.xml` 放入指定文件夹，运行一条命令即可生成模块。
-- **支持伪造 Keybox**：即使是完全人工伪造的 `keybox.xml`，也能让设备信任其根证书。
-- **V1 + V2 + V3 全签名**：自动完成 APK 的多重签名，确保模块兼容性。
+- **支持自签名 Keybox**：即使是完全人工伪造的 `keybox.xml`，也能让设备信任其根证书。
+- - **支持只有某个设备信任的RKP Keybox**：即使这个 RKP 的 `keybox.xml` 只有某个设备信任，也可使大部分设备信任。
 - **完全可逆**：所有修改通过 KernelSU / Magisk / APatch 模块挂载，卸载后重启即恢复原状。
 - **双语文档**：提供完整的中英双语说明文档。
 
