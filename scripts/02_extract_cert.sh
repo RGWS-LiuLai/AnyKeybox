@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
-set -e
+set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-KEYBOX_FILE="$1"
+KEYBOX_FILE="${1:-}"
 
 if [ -z "$KEYBOX_FILE" ] || [ ! -f "$KEYBOX_FILE" ]; then
     echo "错误: 未提供有效的 keybox 文件路径 / Error: Invalid or missing keybox file path"
@@ -43,7 +43,7 @@ if not output_certs:
     print("错误: 未能提取到有效的 PEM 证书！ / Error: Failed to extract valid PEM certificates!")
     sys.exit(1)
 
-with open(out_path, 'w') as f:
+with open(out_path, 'w', encoding='utf-8') as f:
     for cert in output_certs:
         f.write(cert + "\n")
 

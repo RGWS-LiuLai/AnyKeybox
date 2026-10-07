@@ -1,12 +1,13 @@
 #!/data/data/com.termux/files/usr/bin/bash
-set -e
+set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # 查找 keybox 文件，不区分大小写，支持各种奇怪的名字
 echo "正在查找 keybox 文件... / Searching for keybox file..."
 INPUT_DIR="$SCRIPT_DIR/../keybox_input"
-KEYBOX_FILE=$(find "$INPUT_DIR" -maxdepth 1 -type f | grep -iE '/(key|gay|sex)box\.xml$' | head -n 1)
+mkdir -p "$INPUT_DIR"
+KEYBOX_FILE="$(find "$INPUT_DIR" -maxdepth 1 -type f 2>/dev/null | grep -iE '/(key|gay|sex)box\.xml$' | head -n 1 || true)"
 
 if [ -z "$KEYBOX_FILE" ]; then
     echo "========================================================"
@@ -21,13 +22,13 @@ echo "已找到文件 / Found file: $KEYBOX_FILE"
 
 
 echo "=== 步骤 1: 准备环境 / Step 1: Preparing environment ==="
-bash 01_setup_env.sh
+bash "$SCRIPT_DIR/01_setup_env.sh"
 echo "=== 步骤 2: 从 Keybox 提取根证书 / Step 2: Extracting root certificate from Keybox ==="
-bash 02_extract_cert.sh "$KEYBOX_FILE"
+bash "$SCRIPT_DIR/02_extract_cert.sh" "$KEYBOX_FILE"
 echo "=== 步骤 3: 编译并签名 APK / Step 3: Building and signing APK ==="
-bash 03_build_overlay.sh
+bash "$SCRIPT_DIR/03_build_overlay.sh"
 echo "=== 步骤 4: 打包模块 / Step 4: Packaging module ==="
-bash 04_package_module.sh
+bash "$SCRIPT_DIR/04_package_module.sh"
 
 echo "========================================================"
 echo "全部完成！/ All done!"

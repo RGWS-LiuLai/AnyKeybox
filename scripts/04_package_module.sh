@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-set -e
+set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORK_DIR="$SCRIPT_DIR/../output"
 MODULE_DIR="$WORK_DIR/module_files"
@@ -27,10 +27,11 @@ echo "author=RGWS-LiuLai" >> "$MODULE_DIR/module.prop"
 echo "description=Overlay to inject custom OEM attestation certificate. GitHub: https://github.com/RGWS-LiuLai | Coolapk: 恋勿思" >> "$MODULE_DIR/module.prop"
 
 echo "正在打包 ZIP... / Packaging ZIP..."
+rm -f "$WORK_DIR/MyOemOverlay.zip"
 cd "$MODULE_DIR"
-zip -r ../MyOemOverlay.zip ./*
+zip -r ../MyOemOverlay.zip .
 
-if [ ! -f "../MyOemOverlay.zip" ]; then
+if [ ! -f "$WORK_DIR/MyOemOverlay.zip" ]; then
     echo "错误：打包失败，ZIP 未生成！ / Error: Failed to create ZIP!"
     exit 1
 fi

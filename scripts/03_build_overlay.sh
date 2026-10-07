@@ -1,11 +1,19 @@
 #!/data/data/com.termux/files/usr/bin/bash
-set -e
+set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="$SCRIPT_DIR/../overlay_build"
 cd "$BUILD_DIR"
 
+if [ ! -f "$SCRIPT_DIR/../keys/ca.crt" ]; then
+    echo "错误：找不到证书文件 $SCRIPT_DIR/../keys/ca.crt，请先运行 02_extract_cert.sh！ / Error: ca.crt not found!"
+    exit 1
+fi
+
 echo "准备 Overlay 源码... / Preparing Overlay source code..."
 mkdir -p res/values res/xml
+
+# 清理上次构建的旧产物，避免失败后误用过期文件
+rm -f compiled.flata unsigned.apk aligned.apk MyOemOverlay.apk
 
 cat > AndroidManifest.xml << 'XMLEOF'
 <?xml version="1.0" encoding="utf-8"?>
@@ -20,12 +28,16 @@ cat > AndroidManifest.xml << 'XMLEOF'
 </manifest>
 XMLEOF
 
-# 生成正确的 arrays.xml（解决 BUG-01：按证书块而非行拆分，每张证书一个 <item>）
+# 生成正确的 arrays.xml（按证书块而非行拆分，每张证书一个 <item>）
 echo "生成 arrays.xml（提取证书并分块）..."
 python3 - "$SCRIPT_DIR/../keys/ca.crt" "$BUILD_DIR/res/values/arrays.xml" <<'PYEOF'
 import sys, re
-certs = re.findall(r'-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----', open(sys.argv[1]).read(), re.S)
-with open(sys.argv[2], 'w') as f:
+with open(sys.argv[1], 'r', encoding='utf-8') as infile:
+    certs = re.findall(r'-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----', infile.read(), re.S)
+if not certs:
+    print("错误: ca.crt 中未找到有效证书块！ / Error: No valid PEM blocks found in ca.crt!")
+    sys.exit(1)
+with open(sys.argv[2], 'w', encoding='utf-8') as f:
     f.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <string-array name="vendor_required_attestation_certificates">\n')
     for c in certs:
         f.write('        <item>%s</item>\n' % c.strip())
