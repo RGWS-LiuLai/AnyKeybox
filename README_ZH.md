@@ -28,11 +28,10 @@ AnyKeybox 是一款面向安全研究与玩机爱好者的纯脚本工具。它�
 ## 核心特性
 
 - **纯脚本驱动**：无需 Android Studio，Termux 或 Linux 终端即可完成全部流程。
-- **跨平台兼容**：同时支持 Android (Termux) 与标准 Linux 环境。
 - **一键操作**：将 `keybox.xml` 放入指定文件夹，运行一条命令即可生成模块。
 - **支持自签名 Keybox**：即使是完全人工伪造的 `keybox.xml`，也能让设备信任其根证书。
 - - **支持只有某个设备信任的RKP Keybox**：即使这个 RKP 的 `keybox.xml` 只有某个设备信任，也可使大部分设备信任。
-- **完全可逆**：所有修改通过 KernelSU / Magisk / APatch 模块挂载，卸载后重启即恢复原状。
+- **完全可逆**：所有修改通过 KernelSU / Magisk / APatch 模块/元模块挂载，卸载后重启即恢复原状。
 - **双语文档**：提供完整的中英双语说明文档。
 
 ---
@@ -129,32 +128,12 @@ AnyKeybox/
 Android 设备（Termux）
 
 ```bash
-# 1. 从 F-Droid 安装 Termux（不要用 Google Play 版）
+# 1. 从 F-Droid / Github 安装 Termux（不要用 Google Play 版）
 # 2. 授予 Root 权限
 # 3. 克隆并运行
 git clone https://github.com/RGWS-LiuLai/AnyKeybox.git
 cd AnyKeybox
 cp /sdcard/Download/keybox.xml keybox_input/keybox.xml
-chmod +x scripts/*.sh
-bash scripts/run_all.sh
-```
-
-Linux 电脑（Ubuntu / Debian / Fedora）
-
-```bash
-# 1. 安装系统依赖
-sudo apt install -y openjdk-17-jdk python3 zip openssl git  # Debian/Ubuntu
-sudo dnf install -y java-17-openjdk python3 zip openssl git  # Fedora
-
-# 2. 安装 aapt2 和 apksigner（来自 Android SDK Build-Tools）
-
-# 3. 将 framework-res.apk 放入 overlay_build/
-cp /path/to/framework-res.apk overlay_build/
-
-# 4. 克隆并运行
-git clone https://github.com/RGWS-LiuLai/AnyKeybox.git
-cd AnyKeybox
-cp /path/to/your/keybox.xml keybox_input/keybox.xml
 chmod +x scripts/*.sh
 bash scripts/run_all.sh
 ```
@@ -168,12 +147,12 @@ Android 教程
 前置条件：
 
 · 已 Root 的 Android 设备（KernelSU、Magisk 或 APatch）
-· 从 F-Droid 安装的 Termux
+· 从 F-Droid / Github 安装的 Termux
 · 准备好一个 keybox.xml（可以是从网上下载的，也可以是自己伪造的）
 
 步骤 1：安装 Termux 并授予 Root 权限
 
-从 F-Droid 下载并安装 Termux（Google Play 版已停止更新）。打开 Termux 运行：
+从 F-Droid / Github 下载并安装 Termux（Google Play 版已停止更新）。打开 Termux 运行：
 
 ```bash
 su -c "echo Root OK"
@@ -197,7 +176,7 @@ cd AnyKeybox
 cp /sdcard/Download/keybox.xml keybox_input/keybox.xml
 ```
 
-如果你手头还没有 keybox.xml，可以使用标准的 OpenSSL 命令自行生成，或从网上下载。即便是完全伪造的也能生效。
+如果你手头还没有 keybox.xml，可以使用标准的 OpenSSL 命令自行生成，或从网上下载 RKP Keybox.xml。即便是完全伪造的也能生效。
 
 步骤 4：运行一键脚本
 
@@ -231,76 +210,6 @@ bash scripts/run_all.sh
 
 ---
 
-Linux 教程
-
-步骤 1：安装系统依赖
-
-```bash
-# Debian / Ubuntu
-sudo apt update
-sudo apt install -y openjdk-17-jdk python3 zip openssl git
-
-# Fedora
-sudo dnf install -y java-17-openjdk python3 zip openssl git
-```
-
-步骤 2：安装 aapt2 和 apksigner
-
-这两个工具属于 Android SDK Build-Tools。你可以：
-
-方式 A — 使用发行版包管理器（最简单）：
-
-```bash
-sudo apt install -y android-sdk-build-tools aapt2 apksigner  # Debian/Ubuntu
-```
-
-方式 B — 手动下载：
-
-1. 从 Android SDK Build-Tools 下载 build-tools_rXX.X.X-linux.zip
-2. 解压并加入 PATH：
-
-```bash
-unzip build-tools_r34.0.0-linux.zip -d ~/android-build-tools
-echo 'export PATH=$PATH:~/android-build-tools/34.0.0' >> ~/.bashrc
-source ~/.bashrc
-```
-
-验证安装：
-
-```bash
-aapt2 version
-apksigner version
-```
-
-步骤 3：准备 framework-res.apk
-
-Linux 环境无法自动从手机提取 framework-res.apk，需要手动提供：
-
-· 从任意 Android 设备的系统分区中提取 /system/framework/framework-res.apk（可以通过 MT 管理器等 Root 文件管理器，也可以从官方固件包中解压）
-· 将其放入项目的 overlay_build/ 目录
-
-步骤 4：克隆并运行
-
-```bash
-git clone https://github.com/RGWS-LiuLai/AnyKeybox.git
-cd AnyKeybox
-cp /path/to/your/keybox.xml keybox_input/keybox.xml
-chmod +x scripts/*.sh
-bash scripts/run_all.sh
-```
-
-脚本会自动检测 Linux 环境，跳过 pkg install 和 su 逻辑。
-
-步骤 5：部署模块
-
-将 output/MyOemOverlay.zip 传输到已 Root 的 Android 设备，通过 KernelSU / Magisk / APatch 刷入。（ KernelSU / APatch 需有元模块，只识别/system目录的元模块应当手动勾选挂载此模块）
-
-步骤 6：导入
-
-使用Oh My Keymint / TEESimulator / TEESimulator-RS / Tricky Store OSS / Tricky Store 等 TEE 模拟/伪装模块导入要使其信任的 Keybox.xml （推荐），或者烧录要使其信任的 Keybox.xml （不推荐），然后重启手机。
-
----
-
 模块管理
 
 刷入模块
@@ -323,6 +232,8 @@ MyOemOverlay.zip
 重启后，打开 KeyAttestation 检查根证书状态。成功的结果显示：
 
 “本设备信任该根证书，但其他设备可能不信任。”
+
+<img width="1262" height="968" alt="1000012487" src="https://github.com/user-attachments/assets/cf9b9c79-51af-498d-b270-0296b6076c00" />
 
 卸载与回退
 
