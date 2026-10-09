@@ -9,11 +9,13 @@
 
 ## What is AnyKeybox?
 
-AnyKeybox is a pure-script tool designed for security researchers and Android enthusiasts. It parses **any** `keybox.xml`(However, only RKP is recommended, rather than the traditional Keybox.xml.) file — whether extracted from another device, downloaded from the internet, or **artificially fabricated from scratch** — extracts the embedded certificate chain, and automatically compiles, signs, and packages it into a KernelSU / Magisk / APatch module.
+AnyKeybox is a pure-script tool designed for security researchers and Android enthusiasts. It parses any RKP keybox.xml—whether it is a fully general RKP keybox trusted by all devices, an RKP keybox trusted only by a specific device, or a self-signed keybox.xml—extracts the embedded certificate chain, and automatically compiles, signs, and packages it into a KernelSU / Magisk / APatch module.
 
 Once flashed, your Android device will treat the root certificate from the `keybox.xml` as an **OEM-trusted certificate**, causing tools like [KeyAttestation](https://github.com/vvb2060/KeyAttestation) to display the legitimate status:
 
 > *"This device trusts this root certificate, but it may not be trusted by others."*
+
+<img width="1262" height="968" alt="1000012546" src="https://github.com/user-attachments/assets/1d233ce1-6d5f-47cd-90f1-4a097168c978" />
 
 **Crucially, this works even if the keybox.xml is completely artificial.** There is no signature verification against Google's official root, and no remote check is performed. The device simply trusts whatever root certificate is placed into the system's OEM trust array.
 
@@ -28,10 +30,8 @@ This project is **intended solely for personal learning, security research, and 
 ## Key Features
 
 - **Pure Script Driven**: No Android Studio required. Complete the entire workflow in Termux or any Linux terminal.
-- **Cross-Platform Compatible**: Works on both Android (Termux) and standard Linux distributions.
 - **One-Click Operation**: Place your `keybox.xml` into the designated folder, run a single command, and get a flashable module.
 - **Works with Fabricated Keyboxes**: Even a completely artificial `keybox.xml` with no official origin can make the device trust its root certificate.
-- **V1 + V2 + V3 Full Signing**: Automatically performs multi-scheme APK signing to ensure maximum compatibility across Android versions.
 - **Fully Reversible**: All modifications are mounted via KernelSU / Magisk / APatch module system. Uninstall the module and reboot — everything returns to stock.
 - **Bilingual Documentation**: Full English and Chinese documentation provided.
 
@@ -131,7 +131,7 @@ Quick Start
 Android (Termux)
 
 ```bash
-# 1. Install Termux from F-Droid (NOT Google Play)
+# 1. Install Termux from F-Droid / Github (NOT Google Play)
 # 2. Grant Root access when prompted
 # 3. Clone and run
 git clone https://github.com/RGWS-LiuLai/AnyKeybox.git
@@ -140,28 +140,6 @@ cp /sdcard/Download/keybox.xml keybox_input/keybox.xml
 chmod +x scripts/*.sh
 bash scripts/run_all.sh
 ```
-
-Linux (Ubuntu / Debian / Fedora)
-
-```bash
-# 1. Install dependencies
-sudo apt install -y openjdk-17-jdk python3 zip openssl git  # Debian/Ubuntu
-sudo dnf install -y java-17-openjdk python3 zip openssl git  # Fedora
-
-# 2. Install aapt2 and apksigner (from Android SDK Build-Tools)
-
-# 3. Place framework-res.apk into overlay_build/
-cp /path/to/framework-res.apk overlay_build/
-
-# 4. Run
-git clone https://github.com/RGWS-LiuLai/AnyKeybox.git
-cd AnyKeybox
-cp /path/to/your/keybox.xml keybox_input/keybox.xml
-chmod +x scripts/*.sh
-bash scripts/run_all.sh
-```
-
----
 
 Step-by-Step Tutorial
 
@@ -230,72 +208,6 @@ Open KeyAttestation. You should see:
 "This device trusts this root certificate, but it may not be trusted by others."
 
 <img width="1262" height="968" alt="1000012546" src="https://github.com/user-attachments/assets/7cf9c66a-9aac-4cef-8fe1-798135f3b660" />
-
----
-
-Linux Tutorial
-
-Step 1: Install system dependencies
-
-```bash
-# Debian / Ubuntu
-sudo apt update
-sudo apt install -y openjdk-17-jdk python3 zip openssl git
-
-# Fedora
-sudo dnf install -y java-17-openjdk python3 zip openssl git
-```
-
-Step 2: Install aapt2 and apksigner
-
-These tools are part of the Android SDK Build-Tools. You can either:
-
-Option A — Use distro packages (easiest):
-
-```bash
-sudo apt install -y android-sdk-build-tools aapt2 apksigner  # Debian/Ubuntu
-```
-
-Option B — Manual download:
-
-1. Download build-tools_rXX.X.X-linux.zip from Android SDK Build-Tools
-2. Extract and add to PATH:
-
-```bash
-unzip build-tools_r34.0.0-linux.zip -d ~/android-build-tools
-echo 'export PATH=$PATH:~/android-build-tools/34.0.0' >> ~/.bashrc
-source ~/.bashrc
-```
-
-Verify:
-
-```bash
-aapt2 version
-apksigner version
-```
-
-Step 3: Prepare framework-res.apk
-
-Linux cannot extract framework-res.apk from a connected device automatically. You must obtain it manually:
-
-· Extract /system/framework/framework-res.apk from any Android device (via a root file manager like MT Manager, or from an official firmware package)
-· Place it into the overlay_build/ directory of the project
-
-Step 4: Clone and run
-
-```bash
-git clone https://github.com/RGWS-LiuLai/AnyKeybox.git
-cd AnyKeybox
-cp /path/to/your/keybox.xml keybox_input/keybox.xml
-chmod +x scripts/*.sh
-bash scripts/run_all.sh
-```
-
-The script will automatically detect the Linux environment and skip the pkg install and su logic.
-
-Step 5: Deploy the module
-
-Transfer output/MyOemOverlay.zip to your rooted Android device and flash it via KernelSU / Magisk / APatch.
 
 ---
 
